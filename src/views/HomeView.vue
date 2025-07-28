@@ -1,54 +1,34 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
+import { menuData, tabConfig } from '@/assets/menuData.js'
 
-const activeName = ref('first')
+const activeName = ref('all')
 const handleClick = (tab, event) => {
   console.log(tab, event)
 }
 
 const dinvioIcon = new URL('@/assets/images/burger.png', import.meta.url).href
 
-const menu = {
-  first: [
-    { name: 'Espresso', img: dinvioIcon },
-    { name: 'Latte', img: dinvioIcon },
-    { name: 'Cappuccino', img: dinvioIcon },
-    { name: 'Hot Chocolate', img: dinvioIcon },
-    { name: 'Iced Coffee', img: dinvioIcon },
-  ],
-  second: [
-    { name: 'Chocolate Croissant', img: dinvioIcon },
-    { name: 'Blueberry Muffin', img: dinvioIcon },
-    { name: 'Almond Danish', img: dinvioIcon },
-    { name: 'Cinnamon Roll', img: dinvioIcon },
-    { name: 'Banana Bread', img: dinvioIcon },
-  ],
-  third: [
-    { name: 'Grilled Panini', img: dinvioIcon },
-    { name: 'Chicken Caesar Wrap', img: dinvioIcon },
-    { name: 'Veggie Bowl', img: dinvioIcon },
-    { name: 'Club Sandwich', img: dinvioIcon },
-    { name: 'Soup of the Day', img: dinvioIcon },
-  ],
-  fourth: [
-    { name: 'Extra Shot', img: dinvioIcon },
-    { name: 'Whipped Cream', img: dinvioIcon },
-    { name: 'Almond Milk', img: dinvioIcon },
-    { name: 'Flavor Syrup', img: dinvioIcon },
-    { name: 'Protein Boost', img: dinvioIcon },
-  ],
-}
+// Use the imported menu data and tab config
+const menu = menuData
+const tabs = tabConfig
 
-const counts = reactive({
-  first: Array(menu.first.length).fill(0),
-  second: Array(menu.second.length).fill(0),
-  third: Array(menu.third.length).fill(0),
-  fourth: Array(menu.fourth.length).fill(0),
+// Create reactive counts for all menu items
+const counts = reactive({})
+
+// Initialize counts for all menu items
+Object.keys(menu).forEach(category => {
+  counts[category] = Array(menu[category].length).fill(0)
 })
 
-function addItem(tab, idx) {
-  counts[tab][idx]++
+function addItem(category, idx) {
+  counts[category][idx]++
 }
+
+// Computed property to get current menu items based on active tab
+const currentMenuItems = computed(() => {
+  return menu[activeName.value] || []
+})
 </script>
 
 <template>
@@ -69,85 +49,110 @@ function addItem(tab, idx) {
       <div>
         <h1 class="font-bold font-primary text-2xl">Welcome User,</h1>
         <p class="mt-2 text-gray-400 text-base font-primary font-semibold">
-          Here’s what’s happening in your café today.
+          Here's what's happening in your café today.
         </p>
       </div>
 
       <div class="mt-8 w-full min-h-[400px] flex flex-row">
         <!-- Tabs Content -->
         <div class="w-[70%] pr-4 py-4">
-          <!-- <el-tabs v-model="activeName" type="card" class="demo-tabs custom-tabs" @tab-click="handleClick">
-            <el-tab-pane label="Beverages" name="first">
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                <div v-for="(item, idx) in menu.first" :key="item.name" class="bg-white rounded-xl shadow-md flex flex-col overflow-hidden">
-                  <div class="h-32 bg-gray-100 flex items-center justify-center">
-                    <img :src="item.img" alt="item.name" class="h-20 object-contain" />
-                  </div>
-                  <div class="p-4 flex-1 flex items-center justify-center">
-                    <span class="text-lg font-semibold text-gray-800">{{ item.name }}</span>
-                  </div>
-                  <div class="flex items-center justify-between px-4 py-2 bg-gray-50 border-t">
-                    <button @click="addItem('first', idx)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Add</button>
-                    <span class="text-gray-700 font-bold">{{ counts.first[idx] }}</span>
-                  </div>
-                </div>
+          <!-- Custom Tabs -->
+          <div class="custom-tabs">
+            <!-- Tab Navigation -->
+            <div class="tab-navigation mb-6">
+              <div class="flex space-x-1 bg-gray-100 p-1 rounded-xl">
+                <button
+                  v-for="tab in tabs"
+                  :key="tab.key"
+                  @click="activeName = tab.key"
+                  :class="[
+                    'flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ease-in-out',
+                    activeName === tab.key
+                      ? 'bg-white text-blue-600 shadow-lg shadow-blue-100 transform scale-105'
+                      : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                  ]"
+                >
+                  <span class="text-lg">{{ tab.icon }}</span>
+                  <span>{{ tab.label }}</span>
+                </button>
               </div>
-            </el-tab-pane>
+            </div>
 
-            <el-tab-pane label="Pastries" name="second">
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                <div v-for="(item, idx) in menu.second" :key="item.name" class="bg-white rounded-xl shadow-md flex flex-col overflow-hidden">
-                  <div class="h-32 bg-gray-100 flex items-center justify-center">
-                    <img :src="item.img" alt="item.name" class="h-20 object-contain" />
-                  </div>
-                  <div class="p-4 flex-1 flex items-center justify-center">
-                    <span class="text-lg font-semibold text-gray-800">{{ item.name }}</span>
-                  </div>
-                  <div class="flex items-center justify-between px-4 py-2 bg-gray-50 border-t">
-                    <button @click="addItem('second', idx)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Add</button>
-                    <span class="text-gray-700 font-bold">{{ counts.second[idx] }}</span>
-                  </div>
-                </div>
-              </div>
-            </el-tab-pane>
-            <el-tab-pane label="Meals" name="third">
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                <div v-for="(item, idx) in menu.third" :key="item.name" class="bg-white rounded-xl shadow-md flex flex-col overflow-hidden">
-                  <div class="h-32 bg-gray-100 flex items-center justify-center">
-                    <img :src="item.img" alt="item.name" class="h-20 object-contain" />
-                  </div>
-                  <div class="p-4 flex-1 flex items-center justify-center">
-                    <span class="text-lg font-semibold text-gray-800">{{ item.name }}</span>
-                  </div>
-                  <div class="flex items-center justify-between px-4 py-2 bg-gray-50 border-t">
-                    <button @click="addItem('third', idx)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Add</button>
-                    <span class="text-gray-700 font-bold">{{ counts.third[idx] }}</span>
-                  </div>
-                </div>
-              </div>
-            </el-tab-pane>
-            <el-tab-pane label="Add-ons" name="fourth">
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                <div v-for="(item, idx) in menu.fourth" :key="item.name" class="bg-white rounded-xl shadow-md flex flex-col overflow-hidden">
-                  <div class="h-32 bg-gray-100 flex items-center justify-center">
-                    <img :src="item.img" alt="item.name" class="h-20 object-contain" />
-                  </div>
-                  <div class="p-4 flex-1 flex items-center justify-center">
-                    <span class="text-lg font-semibold text-gray-800">{{ item.name }}</span>
-                  </div>
-                  <div class="flex items-center justify-between px-4 py-2 bg-gray-50 border-t">
-                    <button @click="addItem('fourth', idx)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Add</button>
-                    <span class="text-gray-700 font-bold">{{ counts.fourth[idx] }}</span>
-                  </div>
-                </div>
-              </div>
-            </el-tab-pane>
-          </el-tabs> -->
+            <!-- Tab Content -->
+            <div class="tab-content">
+              <div
+                v-show="activeName === activeName"
+                class="fade-in"
+              >
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                  <div
+                    v-for="(item, idx) in currentMenuItems"
+                    :key="`${activeName}-${item.name}-${idx}`"
+                    class="group bg-white rounded-lg shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col overflow-hidden border-0 hover:border-0 relative"
+                    style="background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%)"
+                  >
+                    <!-- Card Header with Image -->
+                    <div
+                      class="relative h-40 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center overflow-hidden"
+                    >
+                      <div
+                        class="absolute inset-0 bg-gradient-to-br from-blue-100/20 to-purple-100/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                      ></div>
+                      <img
+                        :src="item.img"
+                        :alt="item.name"
+                        class="h-30 w-30 object-contain transition-transform duration-500 group-hover:scale-110 z-10 relative"
+                      />
+                      <!-- Decorative elements -->
+                      <div
+                        class="absolute top-2 right-2 w-3 h-3 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                      ></div>
+                      <div
+                        class="absolute bottom-2 left-2 w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                      ></div>
+                    </div>
 
-          <div
-            class="w-full h-16 bg-gray-200 shadow-md rounded-lg flex items-center justify-center"
-          >
-            <p class="text-gray-500 text-lg">Tabs content will be displayed here.</p>
+                    <!-- Card Content -->
+                    <div class="p-6 flex-1 flex flex-col">
+                      <div class="flex-1 flex items-center justify-center mb-4">
+                        <h3
+                          class="text-lg font-semibold text-gray-800 text-center leading-tight group-hover:text-gray-900 transition-colors duration-300"
+                        >
+                          {{ item.name }}
+                        </h3>
+                      </div>
+                      
+                      <!-- Price and Action Section -->
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                          <span class="text-sm text-gray-500 font-medium">Quantity:</span>
+                          <span
+                            class="text-xl font-bold text-gray-800 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent"
+                          >
+                            {{ counts[activeName][idx] }}
+                          </span>
+                        </div>
+                        
+                        <button
+                          @click="addItem(activeName, idx)"
+                          class="relative overflow-hidden bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-purple-700 text-white px-6 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl group-hover:shadow-2xl"
+                        >
+                          <span class="relative z-10">Add</span>
+                          <div
+                            class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          ></div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Subtle border effect -->
+                    <div
+                      class="absolute inset-0 rounded-2xl border border-transparent group-hover:border-blue-200/50 transition-all duration-500 pointer-events-none"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -162,9 +167,49 @@ function addItem(tab, idx) {
 </template>
 
 <style scoped>
-::v-deep(.custom-tabs .el-tabs__item.is-active) {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-radius: 0.5rem;
-  background-color: white;
+.custom-tabs {
+  @apply w-full;
+}
+
+.tab-navigation {
+  @apply w-full;
+}
+
+.tab-content {
+  @apply w-full;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom scrollbar for tab navigation if needed */
+.tab-navigation::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tab-navigation::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.tab-navigation::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.tab-navigation::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>
