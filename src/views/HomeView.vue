@@ -34,41 +34,161 @@ const dinvioIcon = new URL('@/assets/images/burger.png', import.meta.url).href
 const menu = {
   all: [], // Will be populated with all items
   first: [
-    { name: 'Espresso', img: dinvioIcon, price: 3.50, description: 'Rich and bold Italian coffee', category: 'Beverages' },
-    { name: 'Latte', img: dinvioIcon, price: 4.20, description: 'Smooth espresso with steamed milk', category: 'Beverages' },
-    { name: 'Cappuccino', img: dinvioIcon, price: 4.00, description: 'Perfect balance of espresso and foam', category: 'Beverages' },
-    { name: 'Hot Chocolate', img: dinvioIcon, price: 3.80, description: 'Rich and creamy chocolate drink', category: 'Beverages' },
-    { name: 'Iced Coffee', img: dinvioIcon, price: 4.50, description: 'Refreshing cold brew coffee', category: 'Beverages' },
+    {
+      name: 'Espresso',
+      img: dinvioIcon,
+      price: 3.5,
+      description: 'Rich and bold Italian coffee',
+      category: 'Beverages',
+    },
+    {
+      name: 'Latte',
+      img: dinvioIcon,
+      price: 4.2,
+      description: 'Smooth espresso with steamed milk',
+      category: 'Beverages',
+    },
+    {
+      name: 'Cappuccino',
+      img: dinvioIcon,
+      price: 4.0,
+      description: 'Perfect balance of espresso and foam',
+      category: 'Beverages',
+    },
+    {
+      name: 'Hot Chocolate',
+      img: dinvioIcon,
+      price: 3.8,
+      description: 'Rich and creamy chocolate drink',
+      category: 'Beverages',
+    },
+    {
+      name: 'Iced Coffee',
+      img: dinvioIcon,
+      price: 4.5,
+      description: 'Refreshing cold brew coffee',
+      category: 'Beverages',
+    },
   ],
   second: [
-    { name: 'Chocolate Croissant', img: dinvioIcon, price: 3.20, description: 'Buttery pastry with chocolate', category: 'Pastries' },
-    { name: 'Blueberry Muffin', img: dinvioIcon, price: 2.80, description: 'Fresh blueberries in soft muffin', category: 'Pastries' },
-    { name: 'Almond Danish', img: dinvioIcon, price: 3.50, description: 'Flaky pastry with almond filling', category: 'Pastries' },
-    { name: 'Cinnamon Roll', img: dinvioIcon, price: 3.00, description: 'Sweet cinnamon swirl pastry', category: 'Pastries' },
-    { name: 'Banana Bread', img: dinvioIcon, price: 2.50, description: 'Moist and flavorful banana bread', category: 'Pastries' },
+    {
+      name: 'Chocolate Croissant',
+      img: dinvioIcon,
+      price: 3.2,
+      description: 'Buttery pastry with chocolate',
+      category: 'Pastries',
+    },
+    {
+      name: 'Blueberry Muffin',
+      img: dinvioIcon,
+      price: 2.8,
+      description: 'Fresh blueberries in soft muffin',
+      category: 'Pastries',
+    },
+    {
+      name: 'Almond Danish',
+      img: dinvioIcon,
+      price: 3.5,
+      description: 'Flaky pastry with almond filling',
+      category: 'Pastries',
+    },
+    {
+      name: 'Cinnamon Roll',
+      img: dinvioIcon,
+      price: 3.0,
+      description: 'Sweet cinnamon swirl pastry',
+      category: 'Pastries',
+    },
+    {
+      name: 'Banana Bread',
+      img: dinvioIcon,
+      price: 2.5,
+      description: 'Moist and flavorful banana bread',
+      category: 'Pastries',
+    },
   ],
   third: [
-    { name: 'Grilled Panini', img: dinvioIcon, price: 8.50, description: 'Pressed sandwich with fresh ingredients', category: 'Meals' },
-    { name: 'Chicken Caesar Wrap', img: dinvioIcon, price: 9.20, description: 'Grilled chicken with caesar dressing', category: 'Meals' },
-    { name: 'Veggie Bowl', img: dinvioIcon, price: 7.80, description: 'Fresh vegetables with quinoa', category: 'Meals' },
-    { name: 'Club Sandwich', img: dinvioIcon, price: 10.50, description: 'Triple-decker with turkey and bacon', category: 'Meals' },
-    { name: 'Soup of the Day', img: dinvioIcon, price: 6.20, description: 'Homemade soup with bread', category: 'Meals' },
+    {
+      name: 'Grilled Panini',
+      img: dinvioIcon,
+      price: 8.5,
+      description: 'Pressed sandwich with fresh ingredients',
+      category: 'Meals',
+    },
+    {
+      name: 'Chicken Caesar Wrap',
+      img: dinvioIcon,
+      price: 9.2,
+      description: 'Grilled chicken with caesar dressing',
+      category: 'Meals',
+    },
+    {
+      name: 'Veggie Bowl',
+      img: dinvioIcon,
+      price: 7.8,
+      description: 'Fresh vegetables with quinoa',
+      category: 'Meals',
+    },
+    {
+      name: 'Club Sandwich',
+      img: dinvioIcon,
+      price: 10.5,
+      description: 'Triple-decker with turkey and bacon',
+      category: 'Meals',
+    },
+    {
+      name: 'Soup of the Day',
+      img: dinvioIcon,
+      price: 6.2,
+      description: 'Homemade soup with bread',
+      category: 'Meals',
+    },
   ],
   fourth: [
-    { name: 'Extra Shot', img: dinvioIcon, price: 1.00, description: 'Additional espresso shot', category: 'Add-ons' },
-    { name: 'Whipped Cream', img: dinvioIcon, price: 0.50, description: 'Light and fluffy cream topping', category: 'Add-ons' },
-    { name: 'Almond Milk', img: dinvioIcon, price: 0.75, description: 'Dairy-free milk alternative', category: 'Add-ons' },
-    { name: 'Flavor Syrup', img: dinvioIcon, price: 0.60, description: 'Vanilla, caramel, or hazelnut', category: 'Add-ons' },
-    { name: 'Protein Boost', img: dinvioIcon, price: 1.50, description: 'Protein powder for your drink', category: 'Add-ons' },
+    {
+      name: 'Extra Shot',
+      img: dinvioIcon,
+      price: 1.0,
+      description: 'Additional espresso shot',
+      category: 'Add-ons',
+    },
+    {
+      name: 'Whipped Cream',
+      img: dinvioIcon,
+      price: 0.5,
+      description: 'Light and fluffy cream topping',
+      category: 'Add-ons',
+    },
+    {
+      name: 'Almond Milk',
+      img: dinvioIcon,
+      price: 0.75,
+      description: 'Dairy-free milk alternative',
+      category: 'Add-ons',
+    },
+    {
+      name: 'Flavor Syrup',
+      img: dinvioIcon,
+      price: 0.6,
+      description: 'Vanilla, caramel, or hazelnut',
+      category: 'Add-ons',
+    },
+    {
+      name: 'Protein Boost',
+      img: dinvioIcon,
+      price: 1.5,
+      description: 'Protein powder for your drink',
+      category: 'Add-ons',
+    },
   ],
 }
 
 // Populate all items
 menu.all = [
-  ...menu.first.map(item => ({ ...item, originalTab: 'first' })),
-  ...menu.second.map(item => ({ ...item, originalTab: 'second' })),
-  ...menu.third.map(item => ({ ...item, originalTab: 'third' })),
-  ...menu.fourth.map(item => ({ ...item, originalTab: 'fourth' }))
+  ...menu.first.map((item) => ({ ...item, originalTab: 'first' })),
+  ...menu.second.map((item) => ({ ...item, originalTab: 'second' })),
+  ...menu.third.map((item) => ({ ...item, originalTab: 'third' })),
+  ...menu.fourth.map((item) => ({ ...item, originalTab: 'fourth' })),
 ]
 
 const counts = reactive({
@@ -87,10 +207,11 @@ const filteredItems = computed(() => {
   }
 
   const query = searchQuery.value.toLowerCase()
-  return currentMenu.filter(item =>
-    item.name.toLowerCase().includes(query) ||
-    item.description.toLowerCase().includes(query) ||
-    item.category.toLowerCase().includes(query)
+  return currentMenu.filter(
+    (item) =>
+      item.name.toLowerCase().includes(query) ||
+      item.description.toLowerCase().includes(query) ||
+      item.category.toLowerCase().includes(query),
   )
 })
 
@@ -113,7 +234,7 @@ function removeItemCompletely(tab, idx) {
 
 function updateSelectedItems() {
   selectedItems.value = []
-  Object.keys(counts).forEach(tabKey => {
+  Object.keys(counts).forEach((tabKey) => {
     counts[tabKey].forEach((count, idx) => {
       if (count > 0) {
         const item = menu[tabKey][idx]
@@ -121,7 +242,7 @@ function updateSelectedItems() {
           ...item,
           tab: tabKey,
           idx: idx,
-          count: count
+          count: count,
         })
       }
     })
@@ -130,7 +251,7 @@ function updateSelectedItems() {
 
 const totalPrice = computed(() => {
   return selectedItems.value.reduce((total, item) => {
-    return total + (item.price * item.count)
+    return total + item.price * item.count
   }, 0)
 })
 
@@ -162,7 +283,7 @@ function printReceipt() {
       filename: `receipt-${receiptNumber.value}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     }
 
     html2pdf().set(opt).from(receiptElement).save()
@@ -180,7 +301,7 @@ const tabs = [
 
 <template>
   <main>
-    <nav class="bg-white h-18 shadow-md shadow-slate-300 flex items-center justify-between px-4">
+    <nav class="bg-white h-18 shadow-md shadow-slate-300 flex items-center justify-between px-12">
       <div class="flex items-center">
         <img src="@/assets/logo.png" alt="Logo" class="h-8 w-8 mr-2" />
         <span class="text-xl font-bold">Dinvio</span>
@@ -252,8 +373,18 @@ const tabs = [
           <div class="mb-6">
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <svg
+                  class="h-5 w-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
                 </svg>
               </div>
               <input
@@ -268,7 +399,12 @@ const tabs = [
                   class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
                 >
                   <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
                   </svg>
                 </button>
               </div>
@@ -278,14 +414,19 @@ const tabs = [
             <div v-if="searchQuery" class="mt-2 text-sm text-gray-500">
               <span class="font-medium">{{ filteredItems.length }}</span>
               {{ filteredItems.length === 1 ? 'item' : 'items' }} found
-              <span v-if="filteredItems.length === 0" class="text-red-500"> - Try a different search term</span>
+              <span v-if="filteredItems.length === 0" class="text-red-500">
+                - Try a different search term</span
+              >
             </div>
           </div>
 
           <!-- Tab Content -->
-          <div class="bg-white rounded-2xl shadow-lg px-6 py-4 border border-gray-100">
+          <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <transition name="fade" mode="out-in">
-              <div :key="`${activeName}-${searchQuery}`" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div
+                :key="`${activeName}-${searchQuery}`"
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+              >
                 <div
                   v-for="(item, idx) in filteredItems"
                   :key="`${item.name}-${idx}`"
@@ -293,29 +434,51 @@ const tabs = [
                 >
                   <!-- Category Badge -->
                   <div class="absolute top-2 left-2 z-20">
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-white/90 backdrop-blur-sm text-gray-600 shadow-sm">
+                    <span
+                      class="px-2 py-1 text-xs font-semibold rounded-full bg-white/90 backdrop-blur-sm text-gray-600 shadow-sm"
+                    >
                       {{ item.category }}
                     </span>
                   </div>
 
                   <!-- Card Header with Gradient -->
-                  <div class="h-28 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center group-hover:from-gray-100 group-hover:via-gray-200 group-hover:to-gray-300 transition-all duration-500 relative overflow-hidden">
+                  <div
+                    class="h-28 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center group-hover:from-gray-100 group-hover:via-gray-200 group-hover:to-gray-300 transition-all duration-500 relative overflow-hidden"
+                  >
                     <!-- Animated background pattern -->
-                    <div class="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
-                      <div class="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full -translate-x-8 -translate-y-8"></div>
-                      <div class="absolute bottom-0 right-0 w-12 h-12 bg-gradient-to-br from-pink-400 to-red-500 rounded-full translate-x-6 translate-y-6"></div>
+                    <div
+                      class="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity duration-500"
+                    >
+                      <div
+                        class="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full -translate-x-8 -translate-y-8"
+                      ></div>
+                      <div
+                        class="absolute bottom-0 right-0 w-12 h-12 bg-gradient-to-br from-pink-400 to-red-500 rounded-full translate-x-6 translate-y-6"
+                      ></div>
                     </div>
-                    <img :src="item.img" :alt="item.name" class="h-16 object-contain relative z-10 group-hover:scale-110 transition-transform duration-500" />
+                    <img
+                      :src="item.img"
+                      :alt="item.name"
+                      class="h-16 object-contain relative z-10 group-hover:scale-110 transition-transform duration-500"
+                    />
                   </div>
 
                   <!-- Card Content -->
                   <div class="p-4 flex-1 flex flex-col">
                     <div class="flex items-start justify-between mb-2">
-                      <h3 class="text-sm font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-300 line-clamp-2">{{ item.name }}</h3>
-                      <span class="text-sm font-bold text-green-600 ml-2">${{ item.price.toFixed(2) }}</span>
+                      <h3
+                        class="text-sm font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-300 line-clamp-2"
+                      >
+                        {{ item.name }}
+                      </h3>
+                      <span class="text-sm font-bold text-green-600 ml-2"
+                        >${{ item.price.toFixed(2) }}</span
+                      >
                     </div>
 
-                    <p class="text-gray-600 text-xs mb-3 flex-1 line-clamp-2">{{ item.description }}</p>
+                    <p class="text-gray-600 text-xs mb-3 flex-1 line-clamp-2">
+                      {{ item.description }}
+                    </p>
 
                     <!-- Quantity Controls -->
                     <div class="flex items-center justify-between">
@@ -323,13 +486,17 @@ const tabs = [
                         <button
                           @click="removeItem(activeName, idx)"
                           class="w-6 h-6 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center transition-all duration-300 hover:scale-110 text-xs"
-                          :class="{ 'opacity-50 cursor-not-allowed': counts[activeName][idx] === 0 }"
+                          :class="{
+                            'opacity-50 cursor-not-allowed': counts[activeName][idx] === 0,
+                          }"
                           :disabled="counts[activeName][idx] === 0"
                         >
                           <span class="text-xs font-bold">−</span>
                         </button>
 
-                        <span class="text-sm font-bold text-gray-700 min-w-[1.5rem] text-center">{{ counts[activeName][idx] }}</span>
+                        <span class="text-sm font-bold text-gray-700 min-w-[1.5rem] text-center">{{
+                          counts[activeName][idx]
+                        }}</span>
 
                         <button
                           @click="addItem(activeName, idx)"
@@ -362,11 +529,18 @@ const tabs = [
             </div>
 
             <!-- Active Tab Info -->
-            <div class="bg-gradient-to-r rounded-xl p-4 mb-6" :class="tabs.find(t => t.key === activeName)?.color">
+            <div
+              class="bg-gradient-to-r rounded-xl p-4 mb-6"
+              :class="tabs.find((t) => t.key === activeName)?.color"
+            >
               <div class="flex items-center">
-                <span class="text-2xl mr-3">{{ tabs.find(t => t.key === activeName)?.icon }}</span>
+                <span class="text-2xl mr-3">{{
+                  tabs.find((t) => t.key === activeName)?.icon
+                }}</span>
                 <div>
-                  <p class="text-white font-semibold">{{ tabs.find(t => t.key === activeName)?.label }}</p>
+                  <p class="text-white font-semibold">
+                    {{ tabs.find((t) => t.key === activeName)?.label }}
+                  </p>
                   <p class="text-white/80 text-sm">{{ filteredItems.length }} items available</p>
                 </div>
               </div>
@@ -374,7 +548,9 @@ const tabs = [
 
             <!-- Selected Items -->
             <div class="space-y-4 mb-6">
-              <h3 class="text-gray-700 font-semibold text-sm uppercase tracking-wide">Selected Items</h3>
+              <h3 class="text-gray-700 font-semibold text-sm uppercase tracking-wide">
+                Selected Items
+              </h3>
 
               <div v-if="selectedItems.length === 0" class="text-center py-8">
                 <div class="text-gray-400 text-4xl mb-2">🛒</div>
@@ -390,7 +566,9 @@ const tabs = [
                 >
                   <div class="flex items-center justify-between mb-2">
                     <h4 class="font-semibold text-gray-800 text-sm">{{ item.name }}</h4>
-                    <span class="text-green-600 font-bold text-sm">${{ (item.price * item.count).toFixed(2) }}</span>
+                    <span class="text-green-600 font-bold text-sm"
+                      >${{ (item.price * item.count).toFixed(2) }}</span
+                    >
                   </div>
 
                   <div class="flex items-center justify-between">
@@ -402,7 +580,9 @@ const tabs = [
                         −
                       </button>
 
-                      <span class="text-sm font-bold text-gray-700 min-w-[1.5rem] text-center">{{ item.count }}</span>
+                      <span class="text-sm font-bold text-gray-700 min-w-[1.5rem] text-center">{{
+                        item.count
+                      }}</span>
 
                       <button
                         @click="addItem(item.tab, item.idx)"
@@ -443,7 +623,10 @@ const tabs = [
     </section>
 
     <!-- Receipt Modal -->
-    <div v-if="showReceiptModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div
+      v-if="showReceiptModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
       <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <!-- Modal Header -->
         <div class="flex items-center justify-between p-6 border-b border-gray-200">
@@ -453,7 +636,12 @@ const tabs = [
             class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
             </svg>
           </button>
         </div>
@@ -461,10 +649,7 @@ const tabs = [
         <!-- Receipt Content -->
         <div class="p-6">
           <div id="receipt-content">
-            <ReceiptTemplate
-              :order-items="selectedItems"
-              :receipt-number="receiptNumber"
-            />
+            <ReceiptTemplate :order-items="selectedItems" :receipt-number="receiptNumber" />
           </div>
         </div>
 
@@ -537,6 +722,7 @@ button:active {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
