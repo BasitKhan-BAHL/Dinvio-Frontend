@@ -32,6 +32,15 @@
   .font-primary {
     font-family: var(--font-primary);
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 #app {

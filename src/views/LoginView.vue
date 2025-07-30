@@ -5,6 +5,17 @@ const router = useRouter()
 
 const handleLogin = (e) => {
   e.preventDefault()
+
+  if (!e.target[0].value || !e.target[1].value) {
+    alert('Please fill in both fields.')
+    return
+  }
+
+  if (e.target[0].value !== 'user' || e.target[1].value !== 'password') {
+    alert('Invalid username or password.')
+    return
+  }
+
   router.push('/home')
 }
 </script>
