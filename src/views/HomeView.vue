@@ -1,5 +1,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+
+import Navbar from '@/components/Navbar.vue'
+import Footer from '@/components/Footer.vue'
 import ReceiptTemplate from '@/components/ReceiptTemplate.vue'
 import html2pdf from 'html2pdf.js'
 
@@ -290,6 +293,15 @@ function printReceipt() {
   }
 }
 
+function clearAllItems() {
+  Object.keys(counts).forEach((tabKey) => {
+    counts[tabKey].forEach((_, idx) => {
+      counts[tabKey][idx] = 0
+    })
+  })
+  updateSelectedItems()
+}
+
 const tabs = [
   { key: 'all', label: 'All Items', icon: '🍽️', color: 'from-purple-400 to-indigo-500' },
   { key: 'first', label: 'Beverages', icon: '☕', color: 'from-amber-400 to-orange-500' },
@@ -300,62 +312,40 @@ const tabs = [
 </script>
 
 <template>
+  <Navbar />
+
   <main>
-    <nav class="bg-white h-18 shadow-md shadow-slate-300 flex items-center justify-between px-12">
-      <div class="flex items-center">
-        <img src="@/assets/logo.png" alt="Logo" class="h-8 w-8 mr-2" />
-        <span class="text-xl font-bold">Dinvio</span>
-      </div>
-
-      <div class="flex items-center space-x-4">
-        <router-link to="#" class="text-gray-700 hover:text-blue-500">View Orders</router-link>
-        <router-link to="/" class="text-gray-700 hover:text-blue-500">Logout</router-link>
-      </div>
-    </nav>
-
-    <section class="px-14 pt-10 pb-12">
-      <div class="flex items-center justify-between mb-4">
+    <section class="px-4 sm:px-6 lg:px-14 pt-10 pb-12">
+      <div
+        class="flex items-center justify-between mb-4 flex-col sm:flex-row text-center sm:text-left"
+      >
         <div>
           <h1 class="font-bold font-primary text-2xl">Welcome User,</h1>
           <p class="mt-2 text-gray-400 text-base font-primary font-semibold">
             Ready to craft amazing experiences, one order at a time ✨
           </p>
         </div>
-
-        <!-- Beautiful Date & Time Display -->
-        <!-- <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-4 shadow-lg text-white">
-          <div class="text-center">
-            <div class="text-2xl font-bold mb-1">
-              {{ currentTime.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }) }}
-            </div>
-            <div class="text-sm opacity-90">
-              {{ currentTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}
-            </div>
-          </div>
-        </div> -->
       </div>
 
-      <div class="w-full min-h-[400px] flex flex-row">
+      <div class="w-full min-h-[400px] flex flex-col lg:flex-row gap-4">
         <!-- Tabs Content -->
-        <div class="w-[70%] pr-4 py-4">
+        <div class="w-full lg:w-[70%] pr-0 lg:pr-4 py-4">
           <!-- Modern Tabs -->
           <div class="mb-6">
             <!-- Tab Headers -->
-            <div class="flex bg-white rounded-2xl shadow-lg p-2 border border-gray-100">
+            <div class="flex bg-white rounded-2xl shadow-lg p-2 border border-gray-100 flex-wrap">
               <div
                 v-for="tab in tabs"
                 :key="tab.key"
                 @click="handleClick(tab.key)"
-                class="flex-1 relative cursor-pointer transition-all duration-300 ease-in-out"
+                class="flex-1 min-w-[100px] relative cursor-pointer transition-all duration-300 ease-in-out"
               >
-                <!-- Active Tab Background -->
                 <div
                   v-if="activeName === tab.key"
                   class="absolute inset-0 bg-gradient-to-r rounded-xl shadow-md transition-all duration-500 ease-out"
                   :class="tab.color"
                 ></div>
 
-                <!-- Tab Content -->
                 <div class="relative z-10 flex flex-col items-center justify-center py-3 px-2">
                   <span class="text-2xl mb-1">{{ tab.icon }}</span>
                   <span
@@ -384,7 +374,7 @@ const tabs = [
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  ></path>
+                  />
                 </svg>
               </div>
               <input
@@ -404,13 +394,11 @@ const tabs = [
                       stroke-linejoin="round"
                       stroke-width="2"
                       d="M6 18L18 6M6 6l12 12"
-                    ></path>
+                    />
                   </svg>
                 </button>
               </div>
             </div>
-
-            <!-- Search Results Info -->
             <div v-if="searchQuery" class="mt-2 text-sm text-gray-500">
               <span class="font-medium">{{ filteredItems.length }}</span>
               {{ filteredItems.length === 1 ? 'item' : 'items' }} found
@@ -521,7 +509,7 @@ const tabs = [
         </div>
 
         <!-- Sidebar / Preview Panel -->
-        <div class="w-[30%] p-4">
+        <div class="w-full lg:w-[30%] p-0 lg:p-4">
           <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 h-full">
             <div class="flex items-center mb-6">
               <div class="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"></div>
@@ -548,6 +536,29 @@ const tabs = [
 
             <!-- Selected Items -->
             <div class="space-y-4 mb-6">
+              <div v-if="selectedItems.length > 0" class="flex justify-end mb-2">
+                <button
+                  @click="clearAllItems"
+                  class="flex items-center gap-1 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-xs font-semibold transition-all duration-200 shadow-sm"
+                  title="Remove all items"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                  Remove All
+                </button>
+              </div>
               <h3 class="text-gray-700 font-semibold text-sm uppercase tracking-wide">
                 Selected Items
               </h3>
@@ -627,7 +638,9 @@ const tabs = [
       v-if="showReceiptModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide">
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide"
+      >
         <!-- Modal Header -->
         <div class="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 class="text-xl font-bold text-gray-800">Order Receipt</h2>
@@ -671,6 +684,8 @@ const tabs = [
       </div>
     </div>
   </main>
+
+  <Footer />
 </template>
 
 <style scoped>
