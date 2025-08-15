@@ -1,10 +1,13 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { useMenuStore } from '@/stores/menuStore' // <-- your pinia store
 
 import Navbar from '@/components/Navbar.vue'
 import Footer from '@/components/Footer.vue'
 import ReceiptTemplate from '@/components/ReceiptTemplate.vue'
 import html2pdf from 'html2pdf.js'
+
+const menuStore = useMenuStore()
 
 const activeName = ref('all')
 const selectedItems = ref([])
@@ -12,202 +15,65 @@ const searchQuery = ref('')
 const currentTime = ref(new Date())
 const showReceiptModal = ref(false)
 const receiptNumber = ref('')
-
 const timeInterval = ref(null)
 
-onMounted(() => {
+onMounted(async () => {
+  // Start clock
   timeInterval.value = setInterval(() => {
     currentTime.value = new Date()
   }, 1000)
+
+  // Fetch menu items from backend
+  await menuStore.fetchMenu()
+  prepareMenuData()
 })
 
 onUnmounted(() => {
-  if (timeInterval.value) {
-    clearInterval(timeInterval.value)
-  }
+  if (timeInterval.value) clearInterval(timeInterval.value)
 })
 
-const handleClick = (tab) => {
-  activeName.value = tab
-  searchQuery.value = '' // Clear search when switching tabs
-}
+// This will store the menu categorized
+const menu = reactive({
+  all: [],
+  first: [],
+  second: [],
+  third: [],
+  fourth: [],
+})
 
-const dinvioIcon = new URL('@/assets/images/burger.png', import.meta.url).href
-
-const menu = {
-  all: [], // Will be populated with all items
-  first: [
-    {
-      name: 'Espresso',
-      img: dinvioIcon,
-      price: 3.5,
-      description: 'Rich and bold Italian coffee',
-      category: 'Beverages',
-    },
-    {
-      name: 'Latte',
-      img: dinvioIcon,
-      price: 4.2,
-      description: 'Smooth espresso with steamed milk',
-      category: 'Beverages',
-    },
-    {
-      name: 'Cappuccino',
-      img: dinvioIcon,
-      price: 4.0,
-      description: 'Perfect balance of espresso and foam',
-      category: 'Beverages',
-    },
-    {
-      name: 'Hot Chocolate',
-      img: dinvioIcon,
-      price: 3.8,
-      description: 'Rich and creamy chocolate drink',
-      category: 'Beverages',
-    },
-    {
-      name: 'Iced Coffee',
-      img: dinvioIcon,
-      price: 4.5,
-      description: 'Refreshing cold brew coffee',
-      category: 'Beverages',
-    },
-  ],
-  second: [
-    {
-      name: 'Chocolate Croissant',
-      img: dinvioIcon,
-      price: 3.2,
-      description: 'Buttery pastry with chocolate',
-      category: 'Pastries',
-    },
-    {
-      name: 'Blueberry Muffin',
-      img: dinvioIcon,
-      price: 2.8,
-      description: 'Fresh blueberries in soft muffin',
-      category: 'Pastries',
-    },
-    {
-      name: 'Almond Danish',
-      img: dinvioIcon,
-      price: 3.5,
-      description: 'Flaky pastry with almond filling',
-      category: 'Pastries',
-    },
-    {
-      name: 'Cinnamon Roll',
-      img: dinvioIcon,
-      price: 3.0,
-      description: 'Sweet cinnamon swirl pastry',
-      category: 'Pastries',
-    },
-    {
-      name: 'Banana Bread',
-      img: dinvioIcon,
-      price: 2.5,
-      description: 'Moist and flavorful banana bread',
-      category: 'Pastries',
-    },
-  ],
-  third: [
-    {
-      name: 'Grilled Panini',
-      img: dinvioIcon,
-      price: 8.5,
-      description: 'Pressed sandwich with fresh ingredients',
-      category: 'Meals',
-    },
-    {
-      name: 'Chicken Caesar Wrap',
-      img: dinvioIcon,
-      price: 9.2,
-      description: 'Grilled chicken with caesar dressing',
-      category: 'Meals',
-    },
-    {
-      name: 'Veggie Bowl',
-      img: dinvioIcon,
-      price: 7.8,
-      description: 'Fresh vegetables with quinoa',
-      category: 'Meals',
-    },
-    {
-      name: 'Club Sandwich',
-      img: dinvioIcon,
-      price: 10.5,
-      description: 'Triple-decker with turkey and bacon',
-      category: 'Meals',
-    },
-    {
-      name: 'Soup of the Day',
-      img: dinvioIcon,
-      price: 6.2,
-      description: 'Homemade soup with bread',
-      category: 'Meals',
-    },
-  ],
-  fourth: [
-    {
-      name: 'Extra Shot',
-      img: dinvioIcon,
-      price: 1.0,
-      description: 'Additional espresso shot',
-      category: 'Add-ons',
-    },
-    {
-      name: 'Whipped Cream',
-      img: dinvioIcon,
-      price: 0.5,
-      description: 'Light and fluffy cream topping',
-      category: 'Add-ons',
-    },
-    {
-      name: 'Almond Milk',
-      img: dinvioIcon,
-      price: 0.75,
-      description: 'Dairy-free milk alternative',
-      category: 'Add-ons',
-    },
-    {
-      name: 'Flavor Syrup',
-      img: dinvioIcon,
-      price: 0.6,
-      description: 'Vanilla, caramel, or hazelnut',
-      category: 'Add-ons',
-    },
-    {
-      name: 'Protein Boost',
-      img: dinvioIcon,
-      price: 1.5,
-      description: 'Protein powder for your drink',
-      category: 'Add-ons',
-    },
-  ],
-}
-
-// Populate all items
-menu.all = [
-  ...menu.first.map((item) => ({ ...item, originalTab: 'first' })),
-  ...menu.second.map((item) => ({ ...item, originalTab: 'second' })),
-  ...menu.third.map((item) => ({ ...item, originalTab: 'third' })),
-  ...menu.fourth.map((item) => ({ ...item, originalTab: 'fourth' })),
-]
-
+// Counts for each category
 const counts = reactive({
-  all: Array(menu.all.length).fill(0),
-  first: Array(menu.first.length).fill(0),
-  second: Array(menu.second.length).fill(0),
-  third: Array(menu.third.length).fill(0),
-  fourth: Array(menu.fourth.length).fill(0),
+  all: [],
+  first: [],
+  second: [],
+  third: [],
+  fourth: [],
 })
 
-// Computed property for filtered items
+function prepareMenuData() {
+  // Group menu items into categories based on backend "category" field
+  menu.first = menuStore.menuItems.filter((item) => item.category === 'Beverages')
+  menu.second = menuStore.menuItems.filter((item) => item.category === 'Pastries')
+  menu.third = menuStore.menuItems.filter((item) => item.category === 'Meals')
+  menu.fourth = menuStore.menuItems.filter((item) => item.category === 'Add-ons')
+
+  // Populate "all" with originalTab info
+  menu.all = [
+    ...menu.first.map((item) => ({ ...item, originalTab: 'first' })),
+    ...menu.second.map((item) => ({ ...item, originalTab: 'second' })),
+    ...menu.third.map((item) => ({ ...item, originalTab: 'third' })),
+    ...menu.fourth.map((item) => ({ ...item, originalTab: 'fourth' })),
+  ]
+
+  // Init counts array lengths
+  Object.keys(menu).forEach((key) => {
+    counts[key] = Array(menu[key].length).fill(0)
+  })
+}
+
 const filteredItems = computed(() => {
-  const currentMenu = menu[activeName.value]
-  if (!searchQuery.value.trim()) {
-    return currentMenu
-  }
+  const currentMenu = menu[activeName.value] || []
+  if (!searchQuery.value.trim()) return currentMenu
 
   const query = searchQuery.value.toLowerCase()
   return currentMenu.filter(
@@ -217,6 +83,11 @@ const filteredItems = computed(() => {
       item.category.toLowerCase().includes(query),
   )
 })
+
+function handleClick(tab) {
+  activeName.value = tab
+  searchQuery.value = ''
+}
 
 function addItem(tab, idx) {
   counts[tab][idx]++
@@ -241,22 +112,22 @@ function updateSelectedItems() {
     counts[tabKey].forEach((count, idx) => {
       if (count > 0) {
         const item = menu[tabKey][idx]
-        selectedItems.value.push({
-          ...item,
-          tab: tabKey,
-          idx: idx,
-          count: count,
-        })
+        if (item) {
+          selectedItems.value.push({
+            ...item,
+            tab: tabKey,
+            idx,
+            count,
+          })
+        }
       }
     })
   })
 }
 
-const totalPrice = computed(() => {
-  return selectedItems.value.reduce((total, item) => {
-    return total + item.price * item.count
-  }, 0)
-})
+const totalPrice = computed(() =>
+  selectedItems.value.reduce((total, item) => total + item.price * item.count, 0),
+)
 
 function generateReceiptNumber() {
   const timestamp = Date.now()
@@ -269,7 +140,6 @@ function placeOrder() {
     alert('Please add items to your order first!')
     return
   }
-
   receiptNumber.value = generateReceiptNumber()
   showReceiptModal.value = true
 }
@@ -288,16 +158,13 @@ function printReceipt() {
       html2canvas: { scale: 2, useCORS: true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     }
-
     html2pdf().set(opt).from(receiptElement).save()
   }
 }
 
 function clearAllItems() {
   Object.keys(counts).forEach((tabKey) => {
-    counts[tabKey].forEach((_, idx) => {
-      counts[tabKey][idx] = 0
-    })
+    counts[tabKey].forEach((_, idx) => (counts[tabKey][idx] = 0))
   })
   updateSelectedItems()
 }
