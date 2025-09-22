@@ -1,6 +1,7 @@
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { useMenuStore } from '@/stores/menuStore' // <-- your pinia store
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useMenuStore } from '@/stores/menuStore'
+import { useCategoryStore } from '@/stores/categoryStore'
 
 import Navbar from '@/components/Navbar.vue'
 import Footer from '@/components/Footer.vue'
@@ -8,6 +9,7 @@ import ReceiptTemplate from '@/components/ReceiptTemplate.vue'
 import html2pdf from 'html2pdf.js'
 
 const menuStore = useMenuStore()
+const categoryStore = useCategoryStore()
 
 const activeName = ref('all')
 const selectedItems = ref([])
@@ -23,8 +25,17 @@ onMounted(async () => {
     currentTime.value = new Date()
   }, 1000)
 
-  // Fetch menu items from backend
-  await menuStore.fetchMenu()
+  // Fetch categories and menu items from backend
+  await Promise.all([
+    categoryStore.fetchCategories(),
+    menuStore.fetchMenu()
+  ])
+
+  // Debug logging
+  console.log('Categories loaded:', categoryStore.categories)
+  console.log('Menu items loaded:', menuStore.menuItems)
+  console.log('Dynamic categories:', dynamicCategories.value)
+
   prepareMenuData()
 })
 
@@ -32,56 +43,91 @@ onUnmounted(() => {
   if (timeInterval.value) clearInterval(timeInterval.value)
 })
 
-// This will store the menu categorized
+// This will store the menu categorized dynamically
 const menu = reactive({
-  all: [],
-  first: [],
-  second: [],
-  third: [],
-  fourth: [],
+  all: []
 })
 
 // Counts for each category
 const counts = reactive({
-  all: [],
-  first: [],
-  second: [],
-  third: [],
-  fourth: [],
+  all: []
+})
+
+// Dynamic categories from API
+const dynamicCategories = computed(() => {
+  return categoryStore.categories.map(category => ({
+    id: category.categoryId,
+    name: category.name,
+    icon: category.icon,
+    description: category.description,
+    key: category.name.toLowerCase().replace(/\s+/g, '_')
+  }))
 })
 
 function prepareMenuData() {
-  // Group menu items into categories based on backend "category" field
-  menu.first = menuStore.menuItems.filter((item) => item.category === 'Beverages')
-  menu.second = menuStore.menuItems.filter((item) => item.category === 'Pastries')
-  menu.third = menuStore.menuItems.filter((item) => item.category === 'Meals')
-  menu.fourth = menuStore.menuItems.filter((item) => item.category === 'Add-ons')
+  console.log('Preparing menu data...')
+  console.log('Dynamic categories:', dynamicCategories.value)
+  console.log('Menu items:', menuStore.menuItems)
+
+  // Clear existing dynamic menu categories
+  dynamicCategories.value.forEach(category => {
+    menu[category.key] = []
+    counts[category.key] = []
+  })
+
+  // Group menu items into dynamic categories using categoryId
+  dynamicCategories.value.forEach(category => {
+    const itemsInCategory = menuStore.menuItems.filter((item) =>
+      item.categoryId === category.id
+    )
+    console.log(`Category ${category.name} (${category.id}):`, itemsInCategory)
+    menu[category.key] = itemsInCategory
+  })
 
   // Populate "all" with originalTab info
-  menu.all = [
-    ...menu.first.map((item) => ({ ...item, originalTab: 'first' })),
-    ...menu.second.map((item) => ({ ...item, originalTab: 'second' })),
-    ...menu.third.map((item) => ({ ...item, originalTab: 'third' })),
-    ...menu.fourth.map((item) => ({ ...item, originalTab: 'fourth' })),
-  ]
+  menu.all = []
+  dynamicCategories.value.forEach(category => {
+    menu.all.push(...menu[category.key].map((item) => ({
+      ...item,
+      originalTab: category.key
+    })))
+  })
 
   // Init counts array lengths
   Object.keys(menu).forEach((key) => {
     counts[key] = Array(menu[key].length).fill(0)
   })
+
+  console.log('Final menu object:', menu)
+  console.log('Counts object:', counts)
 }
+
+// Watch for changes in categories or menu items and update the menu
+watch(
+  () => [categoryStore.categories, menuStore.menuItems],
+  () => {
+    if (categoryStore.categories.length > 0 && menuStore.menuItems.length > 0) {
+      console.log('Data changed, re-preparing menu...')
+      prepareMenuData()
+    }
+  },
+  { deep: true }
+)
 
 const filteredItems = computed(() => {
   const currentMenu = menu[activeName.value] || []
+  console.log(`Filtered items for ${activeName.value}:`, currentMenu)
   if (!searchQuery.value.trim()) return currentMenu
 
   const query = searchQuery.value.toLowerCase()
-  return currentMenu.filter(
+  const filtered = currentMenu.filter(
     (item) =>
       item.name.toLowerCase().includes(query) ||
       item.description.toLowerCase().includes(query) ||
-      item.category.toLowerCase().includes(query),
+      (categoryStore.getCategoryById(item.categoryId)?.name || '').toLowerCase().includes(query),
   )
+  console.log('Filtered results:', filtered)
+  return filtered
 })
 
 function handleClick(tab) {
@@ -169,13 +215,34 @@ function clearAllItems() {
   updateSelectedItems()
 }
 
-const tabs = [
-  { key: 'all', label: 'All Items', icon: '🍽️', color: 'from-purple-400 to-indigo-500' },
-  { key: 'first', label: 'Beverages', icon: '☕', color: 'from-amber-400 to-orange-500' },
-  { key: 'second', label: 'Pastries', icon: '🥐', color: 'from-pink-400 to-rose-500' },
-  { key: 'third', label: 'Meals', icon: '🍽️', color: 'from-blue-400 to-indigo-500' },
-  { key: 'fourth', label: 'Add-ons', icon: '✨', color: 'from-green-400 to-emerald-500' },
-]
+// Dynamic tabs based on categories from API
+const tabs = computed(() => {
+  const baseTabs = [
+    { key: 'all', label: 'All Items', icon: '🍽️', color: 'from-purple-400 to-indigo-500' }
+  ]
+
+  const categoryTabs = dynamicCategories.value.map((category, index) => {
+    const colors = [
+      'from-amber-400 to-orange-500',
+      'from-pink-400 to-rose-500',
+      'from-blue-400 to-indigo-500',
+      'from-green-400 to-emerald-500',
+      'from-red-400 to-pink-500',
+      'from-yellow-400 to-orange-500',
+      'from-indigo-400 to-purple-500',
+      'from-teal-400 to-blue-500'
+    ]
+
+    return {
+      key: category.key,
+      label: category.name,
+      icon: category.icon || '🍽️',
+      color: colors[index % colors.length]
+    }
+  })
+
+  return [...baseTabs, ...categoryTabs]
+})
 </script>
 
 <template>
@@ -277,7 +344,26 @@ const tabs = [
 
           <!-- Tab Content -->
           <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <transition name="fade" mode="out-in">
+            <!-- Loading State -->
+            <div v-if="menuStore.loading || categoryStore.loading" class="text-center py-8">
+              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <p class="mt-2 text-gray-600">Loading menu items...</p>
+            </div>
+
+            <!-- Error State -->
+            <div v-else-if="menuStore.error || categoryStore.error" class="text-center py-8">
+              <p class="text-red-600">Error loading data: {{ menuStore.error || categoryStore.error }}</p>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else-if="filteredItems.length === 0" class="text-center py-8">
+              <p class="text-gray-600">No items found for this category.</p>
+              <p class="text-sm text-gray-500 mt-2">Debug: Categories: {{ categoryStore.categories.length }}, Menu Items: {{ menuStore.menuItems.length }}</p>
+              <p class="text-sm text-gray-500">Active tab: {{ activeName }}</p>
+            </div>
+
+            <!-- Menu Grid -->
+            <transition v-else name="fade" mode="out-in">
               <div
                 :key="`${activeName}-${searchQuery}`"
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
@@ -292,7 +378,7 @@ const tabs = [
                     <span
                       class="px-2 py-1 text-xs font-semibold rounded-full bg-white/90 backdrop-blur-sm text-gray-600 shadow-sm"
                     >
-                      {{ item.category }}
+                      {{ categoryStore.getCategoryById(item.categoryId)?.name || 'Category' }}
                     </span>
                   </div>
 

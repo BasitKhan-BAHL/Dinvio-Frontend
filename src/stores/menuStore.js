@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import axios from '@/api/axios'
 
 export const useMenuStore = defineStore('menu', {
   state: () => ({
@@ -13,12 +13,7 @@ export const useMenuStore = defineStore('menu', {
       this.loading = true
       this.error = null
       try {
-        const token = localStorage.getItem('token') // from login
-        const res = await axios.get('http://localhost:8050/menu/all', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        const res = await axios.get('/menu/all')
         if (res.data.success) {
           this.menuItems = res.data.data
         } else {

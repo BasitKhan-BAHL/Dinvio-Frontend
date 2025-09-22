@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import axios from '@/api/axios'
 
-export const useMenuStore = defineStore('category', {
+export const useCategoryStore = defineStore('category', {
   state: () => ({
     categories: [],
     loading: false,
@@ -9,16 +9,11 @@ export const useMenuStore = defineStore('category', {
   }),
 
   actions: {
-    async fetchCategory() {
+    async fetchCategories() {
       this.loading = true
       this.error = null
       try {
-        const token = localStorage.getItem('token')
-        const res = await axios.get('http://localhost:8050/category/all', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        const res = await axios.get('/category/all')
         if (res.data.success) {
           this.categories = res.data.data
         } else {
@@ -29,6 +24,16 @@ export const useMenuStore = defineStore('category', {
       } finally {
         this.loading = false
       }
+    },
+
+    // Helper method to get category by ID
+    getCategoryById(categoryId) {
+      return this.categories.find(cat => cat.categoryId === categoryId)
+    },
+
+    // Helper method to get category by name
+    getCategoryByName(name) {
+      return this.categories.find(cat => cat.name === name)
     },
   },
 })
