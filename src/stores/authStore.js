@@ -8,6 +8,10 @@ export const useAuthStore = defineStore('auth', {
     loading: false,
     error: null,
   }),
+  getters: {
+    username: (state) => state.user?.username || null,
+    isAuthenticated: (state) => !!state.token,
+  },
   actions: {
     async login(username, password) {
       this.loading = true
@@ -37,6 +41,15 @@ export const useAuthStore = defineStore('auth', {
       this.token = null
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+    },
+    initializeAuth() {
+      const token = localStorage.getItem('token')
+      const user = localStorage.getItem('user')
+
+      if (token && user) {
+        this.token = token
+        this.user = JSON.parse(user)
+      }
     },
   },
 })

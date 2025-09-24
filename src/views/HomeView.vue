@@ -2,6 +2,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useMenuStore } from '@/stores/menuStore'
 import { useCategoryStore } from '@/stores/categoryStore'
+import { useAuthStore } from '@/stores/authStore'
 
 import Navbar from '@/components/Navbar.vue'
 import Footer from '@/components/Footer.vue'
@@ -10,6 +11,7 @@ import html2pdf from 'html2pdf.js'
 
 const menuStore = useMenuStore()
 const categoryStore = useCategoryStore()
+const authStore = useAuthStore()
 
 const activeName = ref('all')
 const selectedItems = ref([])
@@ -28,10 +30,6 @@ onMounted(async () => {
   // Fetch categories and menu items from backend
   await Promise.all([categoryStore.fetchCategories(), menuStore.fetchMenu()])
 
-  // Debug logging
-  console.log('Categories loaded:', categoryStore.categories)
-  console.log('Menu items loaded:', menuStore.menuItems)
-  console.log('Dynamic categories:', dynamicCategories.value)
 
   prepareMenuData()
 })
@@ -63,9 +61,6 @@ const dynamicCategories = computed(() => {
 })
 
 function prepareMenuData() {
-  console.log('Preparing menu data...')
-  console.log('Dynamic categories:', dynamicCategories.value)
-  console.log('Menu items:', menuStore.menuItems)
 
   // Clear existing dynamic menu categories
   dynamicCategories.value.forEach((category) => {
@@ -76,7 +71,6 @@ function prepareMenuData() {
   // Group menu items into dynamic categories using categoryId
   dynamicCategories.value.forEach((category) => {
     const itemsInCategory = menuStore.menuItems.filter((item) => item.categoryId === category.id)
-    console.log(`Category ${category.name} (${category.id}):`, itemsInCategory)
     menu[category.key] = itemsInCategory
   })
 
@@ -96,8 +90,6 @@ function prepareMenuData() {
     counts[key] = Array(menu[key].length).fill(0)
   })
 
-  console.log('Final menu object:', menu)
-  console.log('Counts object:', counts)
 }
 
 // Watch for changes in categories or menu items and update the menu
@@ -105,7 +97,6 @@ watch(
   () => [categoryStore.categories, menuStore.menuItems],
   () => {
     if (categoryStore.categories.length > 0 && menuStore.menuItems.length > 0) {
-      console.log('Data changed, re-preparing menu...')
       prepareMenuData()
     }
   },
@@ -114,7 +105,6 @@ watch(
 
 const filteredItems = computed(() => {
   const currentMenu = menu[activeName.value] || []
-  console.log(`Filtered items for ${activeName.value}:`, currentMenu)
   if (!searchQuery.value.trim()) return currentMenu
 
   const query = searchQuery.value.toLowerCase()
@@ -124,7 +114,6 @@ const filteredItems = computed(() => {
       item.description.toLowerCase().includes(query) ||
       (categoryStore.getCategoryById(item.categoryId)?.name || '').toLowerCase().includes(query),
   )
-  console.log('Filtered results:', filtered)
   return filtered
 })
 
@@ -222,13 +211,86 @@ function printReceipt() {
   const receiptElement = document.getElementById('receipt-content')
   if (receiptElement) {
     const opt = {
-      margin: 0,
+      margin: [10, 10, 10, 10],
       filename: `receipt-${receiptNumber.value}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        allowTaint: true
+      },
+      jsPDF: {
+        unit: 'mm',
+        format: [80, 200],
+        orientation: 'portrait',
+        compress: true
+      },
     }
     html2pdf().set(opt).from(receiptElement).save()
+  }
+}
+
+function printReceiptDirect() {
+  const receiptElement = document.getElementById('receipt-content')
+  if (receiptElement) {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank')
+
+    // Get the receipt HTML content
+    const receiptHTML = receiptElement.innerHTML
+
+    // Create a complete HTML document for printing
+    const printDocument = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Receipt - ${receiptNumber.value}</title>
+          <style>
+            @page {
+              size: 80mm 200mm;
+              margin: 5mm;
+            }
+            body {
+              margin: 0;
+              padding: 5px;
+              font-family: Arial, sans-serif;
+              background: white;
+              color: #333;
+              font-size: 10px;
+            }
+            .receipt-container {
+              width: 100%;
+              max-width: none;
+              margin: 0;
+              background: white;
+              padding: 5px;
+              font-size: 10px;
+            }
+            @media print {
+              body { margin: 0; padding: 0; }
+              .receipt-container { box-shadow: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="receipt-container">
+            ${receiptHTML}
+          </div>
+        </body>
+      </html>
+    `
+
+    printWindow.document.write(printDocument)
+    printWindow.document.close()
+
+    // Wait for content to load, then print
+    printWindow.onload = function() {
+      printWindow.focus()
+      printWindow.print()
+      printWindow.close()
+    }
   }
 }
 
@@ -278,7 +340,7 @@ const tabs = computed(() => {
         class="flex items-center justify-between mb-4 flex-col sm:flex-row text-center sm:text-left"
       >
         <div>
-          <h1 class="font-bold text-2xl welcome-heading">Welcome User,</h1>
+          <h1 class="font-bold text-2xl welcome-heading">Welcome {{ authStore.username || 'User' }},</h1>
           <p class="mt-2 text-gray-500 text-base welcome-subtext">
             Ready to craft amazing experiences, one order at a time ✨
           </p>
@@ -657,12 +719,26 @@ const tabs = computed(() => {
           >
             Close
           </button>
+          <div class="flex items-center space-x-3">
+            <button
+              @click="printReceiptDirect"
+              class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+              </svg>
+              <span>Print</span>
+          </button>
           <button
             @click="printReceipt"
-            class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+              class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
           >
-            Download PDF
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <span>Download PDF</span>
           </button>
+          </div>
         </div>
       </div>
     </div>

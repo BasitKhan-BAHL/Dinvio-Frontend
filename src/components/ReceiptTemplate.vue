@@ -166,6 +166,29 @@ defineExpose({
   margin: 0 auto;
 }
 
+/* Print-specific styles */
+@media print {
+  .receipt-container {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+    background: white !important;
+    page-break-inside: avoid;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}
+
 /* Header Styles */
 .receipt-header {
   border-bottom: 2px solid #e5e7eb;
