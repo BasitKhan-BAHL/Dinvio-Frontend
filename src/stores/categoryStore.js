@@ -28,12 +28,16 @@ export const useCategoryStore = defineStore('category', {
 
     // Helper method to get category by ID
     getCategoryById(categoryId) {
-      return this.categories.find(cat => cat.categoryId === categoryId)
+      const target = String(categoryId)
+      return this.categories.find((cat) => {
+        const candidate = cat.categoryId || cat.id || cat._id
+        return String(candidate) === target
+      })
     },
 
     // Helper method to get category by name
     getCategoryByName(name) {
-      return this.categories.find(cat => cat.name === name)
+      return this.categories.find((cat) => cat.name === name)
     },
   },
 })

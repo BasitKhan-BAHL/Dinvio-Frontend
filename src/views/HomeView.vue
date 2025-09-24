@@ -26,10 +26,7 @@ onMounted(async () => {
   }, 1000)
 
   // Fetch categories and menu items from backend
-  await Promise.all([
-    categoryStore.fetchCategories(),
-    menuStore.fetchMenu()
-  ])
+  await Promise.all([categoryStore.fetchCategories(), menuStore.fetchMenu()])
 
   // Debug logging
   console.log('Categories loaded:', categoryStore.categories)
@@ -45,22 +42,23 @@ onUnmounted(() => {
 
 // This will store the menu categorized dynamically
 const menu = reactive({
-  all: []
+  all: [],
 })
 
 // Counts for each category
 const counts = reactive({
-  all: []
+  all: [],
 })
 
 // Dynamic categories from API
 const dynamicCategories = computed(() => {
-  return categoryStore.categories.map(category => ({
-    id: category.categoryId,
+  return categoryStore.categories.map((category) => ({
+    // Support multiple possible id fields from API
+    id: category.categoryId || category.id || category._id,
     name: category.name,
     icon: category.icon,
     description: category.description,
-    key: category.name.toLowerCase().replace(/\s+/g, '_')
+    key: category.name.toLowerCase().replace(/\s+/g, '_'),
   }))
 })
 
@@ -70,27 +68,27 @@ function prepareMenuData() {
   console.log('Menu items:', menuStore.menuItems)
 
   // Clear existing dynamic menu categories
-  dynamicCategories.value.forEach(category => {
+  dynamicCategories.value.forEach((category) => {
     menu[category.key] = []
     counts[category.key] = []
   })
 
   // Group menu items into dynamic categories using categoryId
-  dynamicCategories.value.forEach(category => {
-    const itemsInCategory = menuStore.menuItems.filter((item) =>
-      item.categoryId === category.id
-    )
+  dynamicCategories.value.forEach((category) => {
+    const itemsInCategory = menuStore.menuItems.filter((item) => item.categoryId === category.id)
     console.log(`Category ${category.name} (${category.id}):`, itemsInCategory)
     menu[category.key] = itemsInCategory
   })
 
   // Populate "all" with originalTab info
   menu.all = []
-  dynamicCategories.value.forEach(category => {
-    menu.all.push(...menu[category.key].map((item) => ({
-      ...item,
-      originalTab: category.key
-    })))
+  dynamicCategories.value.forEach((category) => {
+    menu.all.push(
+      ...menu[category.key].map((item) => ({
+        ...item,
+        originalTab: category.key,
+      })),
+    )
   })
 
   // Init counts array lengths
@@ -111,7 +109,7 @@ watch(
       prepareMenuData()
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 const filteredItems = computed(() => {
@@ -137,39 +135,65 @@ function handleClick(tab) {
 
 function addItem(tab, idx) {
   counts[tab][idx]++
-  updateSelectedItems()
 }
 
 function removeItem(tab, idx) {
   if (counts[tab][idx] > 0) {
     counts[tab][idx]--
-    updateSelectedItems()
   }
 }
 
-function removeItemCompletely(tab, idx) {
+// removes in-card planned quantity; cart removal handled separately
+
+function addToCart(tab, idx) {
+  const quantity = counts[tab][idx] || 0
+  if (quantity <= 0) return
+
+  const item = menu[tab][idx]
+  if (!item) return
+
+  const existingIndex = selectedItems.value.findIndex((cartItem) => cartItem.id === item.id)
+  if (existingIndex >= 0) {
+    selectedItems.value[existingIndex].count += quantity
+  } else {
+    selectedItems.value.push({
+      ...item,
+      tab,
+      idx,
+      count: quantity,
+    })
+  }
+
   counts[tab][idx] = 0
-  updateSelectedItems()
 }
 
-function updateSelectedItems() {
-  selectedItems.value = []
-  Object.keys(counts).forEach((tabKey) => {
-    counts[tabKey].forEach((count, idx) => {
-      if (count > 0) {
-        const item = menu[tabKey][idx]
-        if (item) {
-          selectedItems.value.push({
-            ...item,
-            tab: tabKey,
-            idx,
-            count,
-          })
-        }
-      }
-    })
-  })
+function incrementCartItem(item) {
+  const index = selectedItems.value.findIndex((cartItem) => cartItem.id === item.id)
+  if (index >= 0) {
+    selectedItems.value[index].count += 1
+  }
 }
+
+function decrementCartItem(item) {
+  const index = selectedItems.value.findIndex((cartItem) => cartItem.id === item.id)
+  if (index >= 0) {
+    const newCount = selectedItems.value[index].count - 1
+    if (newCount <= 0) {
+      selectedItems.value.splice(index, 1)
+    } else {
+      selectedItems.value[index].count = newCount
+    }
+  }
+}
+
+function removeCartItem(item) {
+  const index = selectedItems.value.findIndex((cartItem) => cartItem.id === item.id)
+  if (index >= 0) {
+    selectedItems.value.splice(index, 1)
+  }
+}
+
+// Cart is now managed independently of in-card counters
 
 const totalPrice = computed(() =>
   selectedItems.value.reduce((total, item) => total + item.price * item.count, 0),
@@ -209,16 +233,16 @@ function printReceipt() {
 }
 
 function clearAllItems() {
+  selectedItems.value = []
   Object.keys(counts).forEach((tabKey) => {
     counts[tabKey].forEach((_, idx) => (counts[tabKey][idx] = 0))
   })
-  updateSelectedItems()
 }
 
 // Dynamic tabs based on categories from API
 const tabs = computed(() => {
   const baseTabs = [
-    { key: 'all', label: 'All Items', icon: '🍽️', color: 'from-purple-400 to-indigo-500' }
+    { key: 'all', label: 'All Items', icon: '🍽️', color: 'from-purple-400 to-indigo-500' },
   ]
 
   const categoryTabs = dynamicCategories.value.map((category, index) => {
@@ -230,14 +254,14 @@ const tabs = computed(() => {
       'from-red-400 to-pink-500',
       'from-yellow-400 to-orange-500',
       'from-indigo-400 to-purple-500',
-      'from-teal-400 to-blue-500'
+      'from-teal-400 to-blue-500',
     ]
 
     return {
       key: category.key,
       label: category.name,
       icon: category.icon || '🍽️',
-      color: colors[index % colors.length]
+      color: colors[index % colors.length],
     }
   })
 
@@ -254,8 +278,8 @@ const tabs = computed(() => {
         class="flex items-center justify-between mb-4 flex-col sm:flex-row text-center sm:text-left"
       >
         <div>
-          <h1 class="font-bold font-primary text-2xl">Welcome User,</h1>
-          <p class="mt-2 text-gray-400 text-base font-primary font-semibold">
+          <h1 class="font-bold text-2xl welcome-heading">Welcome User,</h1>
+          <p class="mt-2 text-gray-500 text-base welcome-subtext">
             Ready to craft amazing experiences, one order at a time ✨
           </p>
         </div>
@@ -346,19 +370,26 @@ const tabs = computed(() => {
           <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <!-- Loading State -->
             <div v-if="menuStore.loading || categoryStore.loading" class="text-center py-8">
-              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <div
+                class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
+              ></div>
               <p class="mt-2 text-gray-600">Loading menu items...</p>
             </div>
 
             <!-- Error State -->
             <div v-else-if="menuStore.error || categoryStore.error" class="text-center py-8">
-              <p class="text-red-600">Error loading data: {{ menuStore.error || categoryStore.error }}</p>
+              <p class="text-red-600">
+                Error loading data: {{ menuStore.error || categoryStore.error }}
+              </p>
             </div>
 
             <!-- Empty State -->
             <div v-else-if="filteredItems.length === 0" class="text-center py-8">
               <p class="text-gray-600">No items found for this category.</p>
-              <p class="text-sm text-gray-500 mt-2">Debug: Categories: {{ categoryStore.categories.length }}, Menu Items: {{ menuStore.menuItems.length }}</p>
+              <p class="text-sm text-gray-500 mt-2">
+                Debug: Categories: {{ categoryStore.categories.length }}, Menu Items:
+                {{ menuStore.menuItems.length }}
+              </p>
               <p class="text-sm text-gray-500">Active tab: {{ activeName }}</p>
             </div>
 
@@ -399,7 +430,6 @@ const tabs = computed(() => {
                     </div>
                     <img
                       :src="item.img"
-                      :alt="item.name"
                       class="h-16 object-contain relative z-10 group-hover:scale-110 transition-transform duration-500"
                     />
                   </div>
@@ -448,7 +478,7 @@ const tabs = computed(() => {
                       </div>
 
                       <button
-                        @click="addItem(activeName, idx)"
+                        @click="addToCart(activeName, idx)"
                         class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
                       >
                         Add
@@ -538,7 +568,7 @@ const tabs = computed(() => {
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
                       <button
-                        @click="removeItem(item.tab, item.idx)"
+                        @click="decrementCartItem(item)"
                         class="w-6 h-6 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center transition-all duration-300 text-xs"
                       >
                         −
@@ -549,7 +579,7 @@ const tabs = computed(() => {
                       }}</span>
 
                       <button
-                        @click="addItem(item.tab, item.idx)"
+                        @click="incrementCartItem(item)"
                         class="w-6 h-6 rounded-full bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center transition-all duration-300 text-xs"
                       >
                         +
@@ -557,7 +587,7 @@ const tabs = computed(() => {
                     </div>
 
                     <button
-                      @click="removeItemCompletely(item.tab, item.idx)"
+                      @click="removeCartItem(item)"
                       class="text-red-500 hover:text-red-700 text-xs font-medium transition-colors duration-300"
                     >
                       Remove
@@ -642,6 +672,20 @@ const tabs = computed(() => {
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
+
+.welcome-heading {
+  font-family: 'Quicksand', 'Segoe UI', Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #1f2937;
+}
+
+.welcome-subtext {
+  font-family: 'Quicksand', 'Segoe UI', Arial, sans-serif;
+  font-weight: 400;
+  color: #6b7280;
+}
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.3s ease;
